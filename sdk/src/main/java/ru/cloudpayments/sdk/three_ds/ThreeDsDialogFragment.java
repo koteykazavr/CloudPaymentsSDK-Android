@@ -28,6 +28,8 @@ import ru.cloudpayments.sdk.R;
 
 public class ThreeDsDialogFragment extends DialogFragment {
 
+    public static final String TAG = "ThreeDsDialogFragment";
+
     private static final  String  POST_BACK_URL = "https://demo.cloudpayments.ru/WebFormPost/GetWebViewData";
 
     private static final String ACS_URL = "acs_url";
@@ -43,6 +45,13 @@ public class ThreeDsDialogFragment extends DialogFragment {
     private ThreeDSDialogListener listener;
 
     private WebView webViewThreeDs;
+    private ThreeDSDialogListener threeDSDialogListener;
+
+    public void setThreeDSDialogListenerOwnerTarget( ThreeDSDialogListener threeDSDialogListener ) {
+
+        this.threeDSDialogListener = threeDSDialogListener;
+
+    }
 
     public static ThreeDsDialogFragment newInstance(String acsUrl, String md, String paReq) {
         ThreeDsDialogFragment dialogFragment = new ThreeDsDialogFragment();
@@ -128,6 +137,15 @@ public class ThreeDsDialogFragment extends DialogFragment {
 
             if (paRes != null && !paRes.isEmpty()) {
 
+                if( threeDSDialogListener != null ) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            threeDSDialogListener.onAuthorizationCompleted( md, paRes );
+                        }
+                    });
+                }
+
                 if (listener != null) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
@@ -136,7 +154,18 @@ public class ThreeDsDialogFragment extends DialogFragment {
                         }
                     });
                 }
+
             } else {
+
+                if( threeDSDialogListener != null ) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            threeDSDialogListener.onAuthorizationFailed(html);
+                        }
+                    });
+                }
+
                 if (listener != null) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
